@@ -44,6 +44,9 @@ router.get('/me', async (req: Request, res: Response) => {
 router.put('/me', async (req: Request, res: Response) => {
   try {
     const { first_name, last_name, email, birth_date, gender } = req.body;
+    if (!['M', 'F'].includes(gender)) {
+      return res.status(400).json({ error: 'Gender must be M (Man) or F (Woman)' });
+    }
 
     const changed = await execute(
       `UPDATE member SET first_name = $1, last_name = $2, email = $3, birth_date = $4, gender = $5

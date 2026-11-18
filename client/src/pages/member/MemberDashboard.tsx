@@ -24,6 +24,7 @@ import {
   computeWeeklyStreak,
   daysUntil,
   formatRelativeDay,
+  formatThaiDate,
   formatTimeRange,
   getCountdown,
   getIntensityInfo,
@@ -210,7 +211,7 @@ function DashboardContent({ profile, bookings }: { profile: MemberProfile; booki
           <StatCard
             label="Plan"
             value={hasPlan && daysLeft !== null ? `${Math.max(daysLeft, 0)}d` : '—'}
-            hint={hasPlan ? `Renews ${profile.end_date}` : 'No active plan'}
+            hint={hasPlan ? `Ends ${formatThaiDate(profile.end_date)}` : 'No active plan'}
             icon={<CreditCard className="h-5 w-5" />}
             accent={hasPlan && daysLeft !== null && daysLeft <= 5 ? 'warning' : 'volt'}
             delay={0.2}

@@ -4,7 +4,8 @@
 
 export type Role = 'Admin' | 'Trainer' | 'Member';
 export type AccountStatus = 'Active' | 'Pending';
-export type Gender = 'M' | 'F' | 'Other';
+/** M = Man, F = Woman */
+export type Gender = 'M' | 'F';
 export type ClassLevel = 'Beginner' | 'Intermediate' | 'Advanced';
 export type ScheduleStatus = 'Open' | 'Full' | 'Cancelled';
 export type BookingStatus = 'Booked' | 'Waitlist' | 'Attended' | 'NoShow' | 'Cancelled';

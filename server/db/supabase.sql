@@ -60,7 +60,7 @@ CREATE TABLE member (
   last_name  VARCHAR(100) NOT NULL,
   email      VARCHAR(100) NOT NULL UNIQUE,
   birth_date DATE         NOT NULL,
-  gender     VARCHAR(10)  NOT NULL CHECK (gender IN ('M', 'F', 'Other')),
+  gender     VARCHAR(10)  NOT NULL CHECK (gender IN ('M', 'F')),   -- M = Man, F = Woman
   -- deleting a plan must never delete members, so the link is just cleared
   plan_id    INTEGER      REFERENCES membership_plan(plan_id) ON DELETE SET NULL,
   start_date DATE,

@@ -7,6 +7,8 @@ import { HttpError, sendError } from '../lib/http';
 
 const router = Router();
 
+const GENDERS = ['M', 'F']; // M = Man, F = Woman
+
 function hashPassword(password: string): string {
   return crypto.createHash('sha256').update(password).digest('hex');
 }
@@ -32,6 +34,9 @@ router.post('/register', async (req: Request, res: Response) => {
     if (role === 'Member') {
       if (!birth_date || !gender) {
         return res.status(400).json({ error: 'Members must provide birth_date and gender' });
+      }
+      if (!GENDERS.includes(gender)) {
+        return res.status(400).json({ error: 'Gender must be M (Man) or F (Woman)' });
       }
 
       const result = await withTransaction(async (c) => {

@@ -36,6 +36,7 @@ import {
   cn,
   formatDate,
   formatRelativeDay,
+  formatThaiDate,
   formatTimeRange,
   getIntensityInfo,
   parseClassDateTime,
@@ -265,11 +266,11 @@ function BookingRow({ booking: b, index, onCancel }: { booking: MyBooking; index
           )}
         >
           <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted">
-            {date.toLocaleDateString('en-US', { month: 'short' })}
-          </span>
-          <span className="font-display text-2xl font-bold leading-none">{date.getDate()}</span>
-          <span className="text-[10px] font-semibold text-text-secondary">
             {date.toLocaleDateString('en-US', { weekday: 'short' })}
+          </span>
+          <span className="font-display text-2xl font-bold leading-none">{String(date.getDate()).padStart(2, '0')}</span>
+          <span className="text-[10px] font-semibold tabular-nums text-text-secondary">
+            {formatThaiDate(b.class_date).slice(3)}
           </span>
         </div>
         <div className="min-w-0 sm:hidden">

@@ -57,13 +57,50 @@ export function parseClassDateTime(date: string, time: string): Date {
   return d;
 }
 
-export function formatDate(date: string | Date, opts: Intl.DateTimeFormatOptions = {}): string {
+// ---------- Thai date format: DD/MM/BBBB (Buddhist Era year = CE + 543) ----------
+
+export const BE_OFFSET = 543;
+
+/** "2026-11-18" → "18/11/2569". Empty / invalid input → "—". */
+export function formatThaiDate(date: string | Date | null | undefined): string {
+  if (!date) return '—';
   const d = typeof date === 'string' ? parseDate(date) : date;
-  return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', ...opts });
+  if (Number.isNaN(d.getTime())) return '—';
+  return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear() + BE_OFFSET}`;
+}
+
+/**
+ * "18/11/2569" → "2026-11-18". Returns null unless the text is a complete,
+ * real calendar date with a Buddhist-Era year.
+ */
+export function parseThaiDate(text: string): string | null {
+  const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(text.trim());
+  if (!m) return null;
+  const day = Number(m[1]);
+  const month = Number(m[2]);
+  const yearBE = Number(m[3]);
+  if (yearBE < 2400 || yearBE > 2700) return null;
+  const yearCE = yearBE - BE_OFFSET;
+  const d = new Date(yearCE, month - 1, day);
+  if (d.getFullYear() !== yearCE || d.getMonth() !== month - 1 || d.getDate() !== day) return null;
+  return toISODate(d);
+}
+
+/** All dates in the app display as DD/MM/BBBB. */
+export function formatDate(date: string | Date): string {
+  return formatThaiDate(date);
 }
 
 export function formatLongDate(date: string | Date): string {
-  return formatDate(date, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+  return formatThaiDate(date);
+}
+
+/** "Today" / "Tomorrow" / "Wednesday" — a day name to sit next to a DD/MM/BBBB date. */
+export function formatWeekday(date: string): string {
+  if (date === todayISO()) return 'Today';
+  if (date === addDaysISO(1)) return 'Tomorrow';
+  if (date === addDaysISO(-1)) return 'Yesterday';
+  return parseDate(date).toLocaleDateString('en-US', { weekday: 'long' });
 }
 
 /** "07:00" → "7:00 AM" */
@@ -86,7 +123,7 @@ export function durationMinutes(start: string, end: string): number {
   return eh * 60 + em - (sh * 60 + sm);
 }
 
-/** "Today" / "Tomorrow" / "Wed, Nov 20" */
+/** "Today" / "Tomorrow" / "20/11/2569" */
 export function formatRelativeDay(date: string): string {
   if (date === todayISO()) return 'Today';
   if (date === addDaysISO(1)) return 'Tomorrow';

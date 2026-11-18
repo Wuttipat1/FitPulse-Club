@@ -2,7 +2,6 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { useLocation, useSearchParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-  Calendar,
   Check,
   CreditCard,
   Crown,
@@ -28,6 +27,7 @@ import {
   PageHeader,
   Select,
   Skeleton,
+  ThaiDateInput,
   useConfetti,
 } from '../../components/ui';
 import { api, getErrorMessage } from '../../lib/api';
@@ -41,6 +41,7 @@ import {
   formatLongDate,
   getInitials,
   PHONE_REGEX,
+  todayISO,
 } from '../../lib/utils';
 import type { Gender, MemberProfile as Profile, MembershipPlan, UpdateMemberPayload } from '../../types';
 
@@ -285,7 +286,7 @@ function DetailsForm({ profile, onSaved }: { profile: Profile; onSaved: (p: Part
     if (!form.first_name.trim()) errs.first_name = 'Required';
     if (!form.last_name.trim()) errs.last_name = 'Required';
     if (!EMAIL_REGEX.test(form.email)) errs.email = 'Enter a valid email';
-    if (!form.birth_date) errs.birth_date = 'Required';
+    if (!form.birth_date) errs.birth_date = 'Enter your birth date as DD/MM/BBBB';
     setErrors(errs);
     if (Object.keys(errs).length) return;
     setSaving(true);
@@ -310,22 +311,20 @@ function DetailsForm({ profile, onSaved }: { profile: Profile; onSaved: (p: Part
         </div>
         <Input label="Email" type="email" icon={<Mail />} value={form.email} onChange={(e) => set('email', e.target.value)} error={errors.email} />
         <div className="grid gap-4 sm:grid-cols-2">
-          <Input
+          <ThaiDateInput
             label="Birth date"
-            type="date"
-            icon={<Calendar />}
             value={form.birth_date}
-            onChange={(e) => set('birth_date', e.target.value)}
+            onChange={(iso) => set('birth_date', iso)}
             error={errors.birth_date}
+            max={todayISO()}
           />
           <Select
             label="Gender"
             value={form.gender}
             onChange={(e) => set('gender', e.target.value as Gender)}
             options={[
-              { value: 'M', label: 'Male' },
-              { value: 'F', label: 'Female' },
-              { value: 'Other', label: 'Other' },
+              { value: 'M', label: 'Man' },
+              { value: 'F', label: 'Woman' },
             ]}
           />
         </div>

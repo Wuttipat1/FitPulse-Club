@@ -31,7 +31,7 @@ import {
   addDaysISO,
   cn,
   formatLongDate,
-  formatRelativeDay,
+  formatWeekday,
   formatTimeRange,
   getInitials,
   getIntensityInfo,
@@ -134,7 +134,7 @@ export default function TrainerDashboard() {
           {grouped.map(([date, list]) => (
             <section key={date}>
               <div className="mb-3 flex items-baseline gap-3">
-                <h2 className="font-display text-xl font-bold uppercase">{formatRelativeDay(date)}</h2>
+                <h2 className="font-display text-xl font-bold uppercase">{formatWeekday(date)}</h2>
                 <span className="text-sm text-text-muted">{formatLongDate(date)}</span>
               </div>
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">

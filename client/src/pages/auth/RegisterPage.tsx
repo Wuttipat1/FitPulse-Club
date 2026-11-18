@@ -5,7 +5,6 @@ import {
   ArrowRight,
   Award,
   Briefcase,
-  Calendar,
   CircleCheck,
   Dumbbell,
   KeyRound,
@@ -14,11 +13,11 @@ import {
   UserPlus,
 } from 'lucide-react';
 import { AuthShell } from './AuthShell';
-import { Button, Input, PhoneListInput, Select, Tabs } from '../../components/ui';
+import { Button, Input, PhoneListInput, Select, Tabs, ThaiDateInput } from '../../components/ui';
 import { api, getErrorMessage } from '../../lib/api';
 import { useAuthStore } from '../../stores/authStore';
 import { toast } from '../../stores/toastStore';
-import { cn, EMAIL_REGEX } from '../../lib/utils';
+import { cn, EMAIL_REGEX, todayISO } from '../../lib/utils';
 import type { Gender } from '../../types';
 
 type Mode = 'Member' | 'Trainer';
@@ -83,9 +82,9 @@ export default function RegisterPage() {
     if (!EMAIL_REGEX.test(form.email)) e.email = 'Enter a valid email';
     if (form.phones.length === 0) e.phones = 'Add at least one phone number';
     if (mode === 'Member') {
-      if (!form.birth_date) e.birth_date = 'Required';
-      else if (new Date(form.birth_date) > new Date()) e.birth_date = 'Must be in the past';
-      if (!form.gender) e.gender = 'Required';
+      if (!form.birth_date) e.birth_date = 'Enter your birth date as DD/MM/BBBB';
+      else if (form.birth_date > todayISO()) e.birth_date = 'Must be in the past';
+      if (form.gender !== 'M' && form.gender !== 'F') e.gender = 'Choose Man or Woman';
     } else {
       if (!specialization) e.specialties = 'Pick at least one specialty';
       const yrs = Number(form.experience_years);
@@ -212,14 +211,12 @@ export default function RegisterPage() {
               exit={{ opacity: 0, x: 12 }}
               className="grid grid-cols-2 gap-3"
             >
-              <Input
+              <ThaiDateInput
                 label="Birth date"
-                type="date"
-                icon={<Calendar />}
                 value={form.birth_date}
-                onChange={(e) => set('birth_date', e.target.value)}
+                onChange={(iso) => set('birth_date', iso)}
                 error={errors.birth_date}
-                max={new Date().toISOString().split('T')[0]}
+                max={todayISO()}
               />
               <Select
                 label="Gender"
@@ -228,9 +225,8 @@ export default function RegisterPage() {
                 error={errors.gender}
                 placeholder="Select"
                 options={[
-                  { value: 'M', label: 'Male' },
-                  { value: 'F', label: 'Female' },
-                  { value: 'Other', label: 'Other' },
+                  { value: 'M', label: 'Man' },
+                  { value: 'F', label: 'Woman' },
                 ]}
               />
             </motion.div>
