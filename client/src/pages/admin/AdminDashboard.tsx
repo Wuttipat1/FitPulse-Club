@@ -15,7 +15,7 @@ import {
 import { Badge, Button, CapacityBar, Card, CardHeader, EmptyState, PageHeader, Skeleton, StatCard } from '../../components/ui';
 import { api } from '../../lib/api';
 import { useFetch } from '../../lib/hooks';
-import { cn, formatRelativeDay, formatThaiDate, formatWeekday, formatTime, formatTimeRange, getStatusLabel, timeAgo, todayISO } from '../../lib/utils';
+import { cn, formatDisplayDate, formatRelativeDay, formatWeekday, formatTime, formatTimeRange, getStatusLabel, timeAgo, todayISO } from '../../lib/utils';
 
 export default function AdminDashboard() {
   const { data, loading, error, reload } = useFetch(
@@ -53,7 +53,7 @@ export default function AdminDashboard() {
       <PageHeader
         eyebrow="Admin console"
         title="Club overview"
-        subtitle={`${formatWeekday(todayISO())} · ${formatThaiDate(todayISO())}`}
+        subtitle={`${formatWeekday(todayISO())} · ${formatDisplayDate(todayISO())}`}
         action={
           <Link to="/admin/schedule">
             <Button icon={<CalendarPlus className="h-4 w-4" />}>Schedule class</Button>

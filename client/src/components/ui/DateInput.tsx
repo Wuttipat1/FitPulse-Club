@@ -1,10 +1,10 @@
 import { useEffect, useId, useMemo, useRef, useState, type ChangeEvent, type KeyboardEvent } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { CalendarDays, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
-import { BE_OFFSET, cn, formatThaiDate, parseDate, parseThaiDate, toISODate, todayISO } from '../../lib/utils';
+import { cn, formatDisplayDate, parseDate, parseDisplayDate, toISODate, todayISO } from '../../lib/utils';
 import { fieldBase } from './Input';
 
-export interface ThaiDateInputProps {
+export interface DateInputProps {
   label?: string;
   /** ISO "YYYY-MM-DD", or '' when empty / not yet valid */
   value: string;
@@ -25,41 +25,40 @@ const MONTHS = [
 ];
 const WEEKDAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 
-/** Keep digits only and re-insert the slashes: "18112569" → "18/11/2569". */
+/** Keep digits only and re-insert the dashes: "20261118" → "2026-11-18". */
 function mask(raw: string): string {
   const digits = raw.replace(/\D/g, '').slice(0, 8);
-  if (digits.length <= 2) return digits;
-  if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
-  return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+  if (digits.length <= 4) return digits;
+  if (digits.length <= 6) return `${digits.slice(0, 4)}-${digits.slice(4)}`;
+  return `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6)}`;
 }
 
 /**
- * Date field in Thai format DD/MM/BBBB (Buddhist Era year).
- * Type the date, or pick it from the calendar, which also shows Buddhist
- * years. The value passed in and out is always ISO, so the API keeps
- * receiving YYYY-MM-DD.
+ * Date field in YYYY-MM-DD format (ISO 8601, same as the database).
+ * Type the date (dashes are added for you) or pick it from the calendar.
+ * The value passed in and out is ISO "YYYY-MM-DD".
  */
-export function ThaiDateInput({
+export function DateInput({
   label,
   value,
   onChange,
   min,
   max,
   error,
-  hint = 'DD/MM/BBBB — Buddhist year (พ.ศ.)',
+  hint = 'YYYY-MM-DD',
   disabled,
   containerClassName,
-}: ThaiDateInputProps) {
+}: DateInputProps) {
   const id = useId();
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const [text, setText] = useState(() => (value ? formatThaiDate(value) : ''));
+  const [text, setText] = useState(() => (value ? formatDisplayDate(value) : ''));
   const [touched, setTouched] = useState(false);
   const [open, setOpen] = useState(false);
 
   // Follow changes made from outside (e.g. "Discard changes", form reset)
   useEffect(() => {
-    const current = parseThaiDate(text);
-    if (value && value !== current) setText(formatThaiDate(value));
+    const current = parseDisplayDate(text);
+    if (value && value !== current) setText(formatDisplayDate(value));
     if (!value && current) setText('');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
@@ -74,37 +73,37 @@ export function ThaiDateInput({
     return () => document.removeEventListener('mousedown', onDown);
   }, [open]);
 
-  const iso = parseThaiDate(text);
+  const iso = parseDisplayDate(text);
   let localError = '';
   if (text.length === 10 && !iso) {
-    const yearPart = Number(text.slice(6));
+    const yearPart = Number(text.slice(0, 4));
     localError =
-      yearPart > 0 && yearPart < 2400
-        ? `Use the Buddhist year: ${yearPart} → ${yearPart + BE_OFFSET}`
-        : 'Not a real date — use DD/MM/BBBB';
+      yearPart >= 2400 && yearPart <= 2700
+        ? `Use the Western year: ${yearPart} → ${yearPart - 543}`
+        : 'Not a real date — use YYYY-MM-DD';
   } else if (touched && !open && text.length > 0 && text.length < 10) {
-    localError = 'Complete the date as DD/MM/BBBB';
+    localError = 'Complete the date as YYYY-MM-DD';
   } else if (iso && min && iso < min) {
-    localError = `Must be on or after ${formatThaiDate(min)}`;
+    localError = `Must be on or after ${formatDisplayDate(min)}`;
   } else if (iso && max && iso > max) {
-    localError = `Must be on or before ${formatThaiDate(max)}`;
+    localError = `Must be on or before ${formatDisplayDate(max)}`;
   }
   const shownError = localError || error;
 
   const handleText = (e: ChangeEvent<HTMLInputElement>) => {
     let next = mask(e.target.value);
-    // Backspacing over a slash should also remove the digit before it
-    if (next.length < text.length && text.endsWith('/') && next === text.slice(0, -1)) {
+    // Backspacing over a dash should also remove the digit before it
+    if (next.length < text.length && text.endsWith('-') && next === text.slice(0, -1)) {
       next = mask(next.slice(0, -1));
     }
     setText(next);
-    const parsed = parseThaiDate(next);
+    const parsed = parseDisplayDate(next);
     const inRange = parsed && (!min || parsed >= min) && (!max || parsed <= max);
     onChange(inRange ? parsed : '');
   };
 
   const pick = (picked: string) => {
-    setText(formatThaiDate(picked));
+    setText(formatDisplayDate(picked));
     setTouched(true);
     onChange(picked);
     setOpen(false);
@@ -129,7 +128,7 @@ export function ThaiDateInput({
           type="text"
           inputMode="numeric"
           autoComplete="off"
-          placeholder="DD/MM/BBBB"
+          placeholder="YYYY-MM-DD"
           maxLength={10}
           value={text}
           onChange={handleText}
@@ -160,7 +159,7 @@ export function ThaiDateInput({
 
         <AnimatePresence>
           {open && (
-            <BuddhistCalendar
+            <CalendarPopover
               selected={iso}
               min={min}
               max={max}
@@ -181,10 +180,10 @@ export function ThaiDateInput({
 }
 
 // ---------------------------------------------------------------------------
-// Calendar popover — month grid with Buddhist-Era years
+// Calendar popover — month grid
 // ---------------------------------------------------------------------------
 
-interface BuddhistCalendarProps {
+interface CalendarPopoverProps {
   selected: string | null;
   min?: string;
   max?: string;
@@ -193,7 +192,7 @@ interface BuddhistCalendarProps {
   onClose: () => void;
 }
 
-function BuddhistCalendar({ selected, min, max, onPick, onClear, onClose }: BuddhistCalendarProps) {
+function CalendarPopover({ selected, min, max, onPick, onClear, onClose }: CalendarPopoverProps) {
   const today = todayISO();
   const todayInRange = (!min || today >= min) && (!max || today <= max);
 
@@ -291,14 +290,14 @@ function BuddhistCalendar({ selected, min, max, onPick, onClear, onClose }: Budd
           </div>
           <div className="relative">
             <select
-              aria-label="Year (Buddhist Era)"
+              aria-label="Year"
               value={view.y}
               onChange={(e) => setView((v) => ({ ...v, y: Number(e.target.value) }))}
               className={cn(selectCls, 'tabular-nums')}
             >
               {years.map((y) => (
                 <option key={y} value={y} className="bg-surface">
-                  {y + BE_OFFSET}
+                  {y}
                 </option>
               ))}
             </select>
@@ -336,7 +335,7 @@ function BuddhistCalendar({ selected, min, max, onPick, onClear, onClose }: Budd
               type="button"
               disabled={c.disabled}
               onClick={() => onPick(c.iso)}
-              aria-label={formatThaiDate(c.iso)}
+              aria-label={c.iso}
               aria-pressed={isSelected}
               className={cn(
                 'h-9 rounded-lg text-sm tabular-nums transition-colors cursor-pointer',
@@ -361,7 +360,7 @@ function BuddhistCalendar({ selected, min, max, onPick, onClear, onClose }: Budd
         <button type="button" onClick={onClear} className="rounded-lg px-2 py-1 font-semibold text-text-secondary hover:bg-white/5 hover:text-text-primary cursor-pointer">
           Clear
         </button>
-        <span className="text-xs tabular-nums text-text-muted">{selected ? formatThaiDate(selected) : 'DD/MM/BBBB'}</span>
+        <span className="text-xs tabular-nums text-text-muted">{selected ?? 'YYYY-MM-DD'}</span>
         <button
           type="button"
           onClick={() => todayInRange && onPick(today)}

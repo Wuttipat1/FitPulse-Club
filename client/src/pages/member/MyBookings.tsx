@@ -36,7 +36,6 @@ import {
   cn,
   formatDate,
   formatRelativeDay,
-  formatThaiDate,
   formatTimeRange,
   getIntensityInfo,
   parseClassDateTime,
@@ -270,7 +269,7 @@ function BookingRow({ booking: b, index, onCancel }: { booking: MyBooking; index
           </span>
           <span className="font-display text-2xl font-bold leading-none">{String(date.getDate()).padStart(2, '0')}</span>
           <span className="text-[10px] font-semibold tabular-nums text-text-secondary">
-            {formatThaiDate(b.class_date).slice(3)}
+            {b.class_date.slice(0, 7)}
           </span>
         </div>
         <div className="min-w-0 sm:hidden">

@@ -4,7 +4,7 @@ export { Card, CardHeader } from './Card';
 export { Badge } from './Badge';
 export { Modal } from './Modal';
 export { Input } from './Input';
-export { ThaiDateInput } from './ThaiDateInput';
+export { DateInput } from './DateInput';
 export { Select } from './Select';
 export type { SelectOption } from './Select';
 export { ToastViewport } from './Toast';

@@ -13,7 +13,7 @@ import {
   UserPlus,
 } from 'lucide-react';
 import { AuthShell } from './AuthShell';
-import { Button, Input, PhoneListInput, Select, Tabs, ThaiDateInput } from '../../components/ui';
+import { Button, Input, PhoneListInput, Select, Tabs, DateInput } from '../../components/ui';
 import { api, getErrorMessage } from '../../lib/api';
 import { useAuthStore } from '../../stores/authStore';
 import { toast } from '../../stores/toastStore';
@@ -82,7 +82,7 @@ export default function RegisterPage() {
     if (!EMAIL_REGEX.test(form.email)) e.email = 'Enter a valid email';
     if (form.phones.length === 0) e.phones = 'Add at least one phone number';
     if (mode === 'Member') {
-      if (!form.birth_date) e.birth_date = 'Enter your birth date as DD/MM/BBBB';
+      if (!form.birth_date) e.birth_date = 'Enter your birth date as YYYY-MM-DD';
       else if (form.birth_date > todayISO()) e.birth_date = 'Must be in the past';
       if (form.gender !== 'M' && form.gender !== 'F') e.gender = 'Choose Man or Woman';
     } else {
@@ -211,7 +211,7 @@ export default function RegisterPage() {
               exit={{ opacity: 0, x: 12 }}
               className="grid grid-cols-2 gap-3"
             >
-              <ThaiDateInput
+              <DateInput
                 label="Birth date"
                 value={form.birth_date}
                 onChange={(iso) => set('birth_date', iso)}

@@ -57,45 +57,42 @@ export function parseClassDateTime(date: string, time: string): Date {
   return d;
 }
 
-// ---------- Thai date format: DD/MM/BBBB (Buddhist Era year = CE + 543) ----------
+// ---------- Display format: YYYY-MM-DD (ISO 8601, Western year — same as the database) ----------
 
-export const BE_OFFSET = 543;
-
-/** "2026-11-18" → "18/11/2569". Empty / invalid input → "—". */
-export function formatThaiDate(date: string | Date | null | undefined): string {
+/** "2026-11-18" or a Date → "2026-11-18". Empty / invalid input → "—". */
+export function formatDisplayDate(date: string | Date | null | undefined): string {
   if (!date) return '—';
   const d = typeof date === 'string' ? parseDate(date) : date;
   if (Number.isNaN(d.getTime())) return '—';
-  return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear() + BE_OFFSET}`;
-}
-
-/**
- * "18/11/2569" → "2026-11-18". Returns null unless the text is a complete,
- * real calendar date with a Buddhist-Era year.
- */
-export function parseThaiDate(text: string): string | null {
-  const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(text.trim());
-  if (!m) return null;
-  const day = Number(m[1]);
-  const month = Number(m[2]);
-  const yearBE = Number(m[3]);
-  if (yearBE < 2400 || yearBE > 2700) return null;
-  const yearCE = yearBE - BE_OFFSET;
-  const d = new Date(yearCE, month - 1, day);
-  if (d.getFullYear() !== yearCE || d.getMonth() !== month - 1 || d.getDate() !== day) return null;
   return toISODate(d);
 }
 
-/** All dates in the app display as DD/MM/BBBB. */
+/**
+ * Validate typed "YYYY-MM-DD" text. Returns the ISO date, or null unless the
+ * text is a complete, real calendar date (years 1900–2199).
+ */
+export function parseDisplayDate(text: string): string | null {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(text.trim());
+  if (!m) return null;
+  const year = Number(m[1]);
+  const month = Number(m[2]);
+  const day = Number(m[3]);
+  if (year < 1900 || year > 2199) return null;
+  const d = new Date(year, month - 1, day);
+  if (d.getFullYear() !== year || d.getMonth() !== month - 1 || d.getDate() !== day) return null;
+  return toISODate(d);
+}
+
+/** All dates in the app display as YYYY-MM-DD. */
 export function formatDate(date: string | Date): string {
-  return formatThaiDate(date);
+  return formatDisplayDate(date);
 }
 
 export function formatLongDate(date: string | Date): string {
-  return formatThaiDate(date);
+  return formatDisplayDate(date);
 }
 
-/** "Today" / "Tomorrow" / "Wednesday" — a day name to sit next to a DD/MM/BBBB date. */
+/** "Today" / "Tomorrow" / "Wednesday" — a day name to sit next to a YYYY-MM-DD date. */
 export function formatWeekday(date: string): string {
   if (date === todayISO()) return 'Today';
   if (date === addDaysISO(1)) return 'Tomorrow';
@@ -123,7 +120,7 @@ export function durationMinutes(start: string, end: string): number {
   return eh * 60 + em - (sh * 60 + sm);
 }
 
-/** "Today" / "Tomorrow" / "20/11/2569" */
+/** "Today" / "Tomorrow" / "2026-11-20" */
 export function formatRelativeDay(date: string): string {
   if (date === todayISO()) return 'Today';
   if (date === addDaysISO(1)) return 'Tomorrow';

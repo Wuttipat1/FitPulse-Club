@@ -17,7 +17,7 @@ import {
   User,
   Users,
 } from 'lucide-react';
-import { Badge, Button, Card, CardHeader, EmptyState, Input, Modal, PageHeader, Select, Skeleton, ThaiDateInput } from '../../components/ui';
+import { Badge, Button, Card, CardHeader, EmptyState, Input, Modal, PageHeader, Select, Skeleton, DateInput } from '../../components/ui';
 import { api, ApiError, getErrorMessage } from '../../lib/api';
 import { useDebounced, useFetch } from '../../lib/hooks';
 import { toast } from '../../stores/toastStore';
@@ -269,7 +269,7 @@ export default function AdminSchedule() {
             {draft.room === CUSTOM_ROOM && (
               <Input placeholder="Room name" icon={<MapPin />} value={draft.customRoom} onChange={(e) => set('customRoom', e.target.value)} autoFocus />
             )}
-            <ThaiDateInput label="Date" min={todayISO()} value={draft.class_date} onChange={(iso) => set('class_date', iso)} error={dateError} hint="DD/MM/BBBB" />
+            <DateInput label="Date" min={todayISO()} value={draft.class_date} onChange={(iso) => set('class_date', iso)} error={dateError} />
             <div className="grid grid-cols-2 gap-3">
               <Input
                 label="Start"

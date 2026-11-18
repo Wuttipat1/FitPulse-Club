@@ -27,7 +27,7 @@ import {
   PageHeader,
   Select,
   Skeleton,
-  ThaiDateInput,
+  DateInput,
   useConfetti,
 } from '../../components/ui';
 import { api, getErrorMessage } from '../../lib/api';
@@ -286,7 +286,7 @@ function DetailsForm({ profile, onSaved }: { profile: Profile; onSaved: (p: Part
     if (!form.first_name.trim()) errs.first_name = 'Required';
     if (!form.last_name.trim()) errs.last_name = 'Required';
     if (!EMAIL_REGEX.test(form.email)) errs.email = 'Enter a valid email';
-    if (!form.birth_date) errs.birth_date = 'Enter your birth date as DD/MM/BBBB';
+    if (!form.birth_date) errs.birth_date = 'Enter your birth date as YYYY-MM-DD';
     setErrors(errs);
     if (Object.keys(errs).length) return;
     setSaving(true);
@@ -311,7 +311,7 @@ function DetailsForm({ profile, onSaved }: { profile: Profile; onSaved: (p: Part
         </div>
         <Input label="Email" type="email" icon={<Mail />} value={form.email} onChange={(e) => set('email', e.target.value)} error={errors.email} />
         <div className="grid gap-4 sm:grid-cols-2">
-          <ThaiDateInput
+          <DateInput
             label="Birth date"
             value={form.birth_date}
             onChange={(iso) => set('birth_date', iso)}
