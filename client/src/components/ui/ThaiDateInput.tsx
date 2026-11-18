@@ -201,6 +201,13 @@ function BuddhistCalendar({ selected, min, max, onPick, onClear, onClose }: Budd
   const start = parseDate(selected ?? (todayInRange ? today : max && today > max ? max : min ?? today));
   const [view, setView] = useState({ y: start.getFullYear(), m: start.getMonth() });
 
+  // Typing a full date while the calendar is open jumps the calendar to it
+  useEffect(() => {
+    if (!selected) return;
+    const d = parseDate(selected);
+    setView({ y: d.getFullYear(), m: d.getMonth() });
+  }, [selected]);
+
   const minD = min ? parseDate(min) : null;
   const maxD = max ? parseDate(max) : null;
   const firstYear = minD ? minD.getFullYear() : new Date().getFullYear() - 100;
